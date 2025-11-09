@@ -3,11 +3,9 @@
 
 // method when mode is r
 void modeR(const int argc, char* argv[]) {
-    std::cout << "This is mode r" << std::endl;
-
-    // options going to be done task, or not done tasks; and -first, -se, or -last (decided to do only one)
+    // options going to be done, to do, or iprg (inprogress); and -first, -se, or -last (decided to do only one)
     // if given multiple, only the last of the two will be considered
-    // all other options will be given a warning, but it continues
+    // all other options will be given a warning, but it stillcontinues
     if (argc == 2) {
         std::ifstream infile("tasks.txt");
 
@@ -17,21 +15,57 @@ void modeR(const int argc, char* argv[]) {
             std::cout << line << std::endl;
         }
     } else {
+        std::string rangeMode;
+        std::string taskType;
+
+        int firstNumber = -1, secondNumber = -1;
+
         for (int i = 2; i < argc; i++) {
             if (strcmp(argv[i], "-first") == 0) {
-                std::cout << "first" << std::endl;
+                if (i + 1 < argc
+                    && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)) {
+                    rangeMode = "-first";
+                    i = i + 1;
+                } else {
+                    // Here, the first is essentially ignored
+                    std::cout << "Warning: no number specified for -first" << std::endl;
+                }
             } else if (strcmp(argv[i], "-se") == 0) {
-                std::cout << "se" << std::endl;
+                if (i + 2 < argc
+                    && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)
+                    && std::all_of(argv[i + 2], argv[i + 2] + strlen(argv[i + 2]), ::isdigit)) {
+                    rangeMode = "-se";
+                    i = i + 2;
+                } else if (i + 1 < argc
+                    && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)) {
+                    std::cout << "Warning: no second number specified for -se" << std::endl;
+                    i = i + 1;
+                } else {
+                    // Here, the se is essentially ignored
+                    std::cout << "Warning: no numbers specified for -se" << std::endl;
+                }
             } else if (strcmp(argv[i], "-last") == 0) {
-                std::cout << "last" << std::endl;
+                if (i + 1 < argc
+                    && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)) {
+                    rangeMode = "-last";
+                    i = i + 1;
+                } else {
+                    // Here, the last is essentially ignored
+                    std::cout << "Warning: no number specified for -last" << std::endl;
+                }
             } else if (strcmp(argv[i], "-done") == 0) {
-                std::cout << "done" << std::endl;
-            } else if (strcmp(argv[i], "-left") == 0) {
-                std::cout << "left" << std::endl;
+                taskType = "-done";
+            } else if (strcmp(argv[i], "-todo") == 0) {
+                taskType = "-left";
+            } else if (strcmp(argv[i], "-iprg") == 0) {
+                taskType = "-iprg";
             } else {
                 std::cout << "Warning: unknown option " << argv[i] << std::endl;
             }
         }
+
+        std::cout << "Range mode: " << rangeMode << std::endl;
+        std::cout << "Task type: " << taskType << std::endl;
     }
 }
 
