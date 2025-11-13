@@ -3,62 +3,77 @@
 
 // method when mode is r
 void modeR(const int argc, char* argv[]) {
-    // options going to be done, to do, or iprg (inprogress); and -first, -se, or -last (decided to do only one)
+    // options going to be done, open, or iprg (inprogress); and -first, -se, or -last (decided to do only one)
     // if given multiple, only the last of the two will be considered
-    // all other options will be given a warning, but it stillcontinues
-    if (argc == 2) {
-        std::ifstream infile("tasks.txt");
+    // all other options will be given a warning, but it still continues
+    std::ifstream infile("tasks.txt");
 
+    if (argc == 2) {
         std::string line;
         std::getline(infile, line);
         while (std::getline(infile, line)) {
             std::cout << line << std::endl;
         }
     } else {
-        std::string rangeMode;
-        std::string taskType;
+        std::string rangeMode = "default";
+        std::string taskType = "default";
 
-        int firstNumber = -1, secondNumber = -1;
+        int firstNumber = 1, secondNumber = 0;
+        std::string line;
+        std::getline(infile, line);
+        int maxNumber = std::stoi(line);
+        secondNumber = maxNumber;
 
         for (int i = 2; i < argc; i++) {
             if (strcmp(argv[i], "-first") == 0) {
                 if (i + 1 < argc
-                    && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)) {
-                    rangeMode = "-first";
+                    && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)
+                    && std::stoi(argv[i + 1]) <= maxNumber) {
+                    rangeMode = "first";
+                    firstNumber = 0;
+                    secondNumber = std::stoi(argv[i + 1]);
                     i = i + 1;
                 } else {
                     // Here, the first is essentially ignored
-                    std::cout << "Warning: no number specified for -first" << std::endl;
+                    std::cout << "Warning: no number specified for -first (MAYBE also out of bounds)" << std::endl;
                 }
             } else if (strcmp(argv[i], "-se") == 0) {
                 if (i + 2 < argc
                     && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)
-                    && std::all_of(argv[i + 2], argv[i + 2] + strlen(argv[i + 2]), ::isdigit)) {
-                    rangeMode = "-se";
+                    && std::all_of(argv[i + 2], argv[i + 2] + strlen(argv[i + 2]), ::isdigit)
+                    && std::stoi(argv[i + 1]) < std::stoi(argv[i + 2])
+                    && std::stoi(argv[i + 2]) <= maxNumber
+                    && std::stoi(argv[i + 1]) <= 0) {
+                    rangeMode = "se";
+                    firstNumber = std::stoi(argv[i + 1]);
+                    secondNumber = std::stoi(argv[i + 2]);
                     i = i + 2;
                 } else if (i + 1 < argc
                     && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)) {
-                    std::cout << "Warning: no second number specified for -se" << std::endl;
+                    std::cout << "Warning: no second number specified for -se (MAYBE also out of bounds)" << std::endl;
                     i = i + 1;
                 } else {
                     // Here, the se is essentially ignored
-                    std::cout << "Warning: no numbers specified for -se" << std::endl;
+                    std::cout << "Warning: no numbers specified for -se (MAYBE also out of bounds)" << std::endl;
                 }
             } else if (strcmp(argv[i], "-last") == 0) {
                 if (i + 1 < argc
-                    && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)) {
-                    rangeMode = "-last";
+                    && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)
+                    && std::stoi(argv[i + 1]) >= 0) {
+                    rangeMode = "last";
+                    firstNumber = std::stoi(argv[i + 1]);
+                    secondNumber = maxNumber;
                     i = i + 1;
                 } else {
                     // Here, the last is essentially ignored
-                    std::cout << "Warning: no number specified for -last" << std::endl;
+                    std::cout << "Warning: no number specified for -last (MAYBE also out of bounds)" << std::endl;
                 }
             } else if (strcmp(argv[i], "-done") == 0) {
-                taskType = "-done";
-            } else if (strcmp(argv[i], "-todo") == 0) {
-                taskType = "-left";
+                taskType = "DONE";
+            } else if (strcmp(argv[i], "-open") == 0) {
+                taskType = "OPEN";
             } else if (strcmp(argv[i], "-iprg") == 0) {
-                taskType = "-iprg";
+                taskType = "IPRG";
             } else {
                 std::cout << "Warning: unknown option " << argv[i] << std::endl;
             }
@@ -66,6 +81,21 @@ void modeR(const int argc, char* argv[]) {
 
         std::cout << "Range mode: " << rangeMode << std::endl;
         std::cout << "Task type: " << taskType << std::endl;
+
+        for (int i = 1; i < firstNumber; i++) {
+            std::getline(infile, line);
+        }
+
+        char status[5]; // 5 chars + null terminator
+        for (int i = firstNumber; i <= secondNumber; i++) {
+            infile.read(status, 4);
+            status[4] = '\0';
+
+            std::getline(infile, line); // probably inefficient
+            if (status == taskType) {
+                std::cout << i << ": " << line << std::endl;
+            }
+        }
     }
 }
 
