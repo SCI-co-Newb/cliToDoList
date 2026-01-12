@@ -7,10 +7,10 @@ void modeR(const int argc, char* argv[]) {
     // if given multiple, only the last of the two will be considered
     // all other options will be given a warning, but it still continues
     std::ifstream infile("tasks.txt");
+    std::ifstream countfile("count.txt");
 
     if (argc == 2) {
         std::string line;
-        std::getline(infile, line);
         while (std::getline(infile, line)) {
             std::cout << line << std::endl;
         }
@@ -19,8 +19,10 @@ void modeR(const int argc, char* argv[]) {
         std::string taskType = "default";
 
         int firstNumber = 1, secondNumber = 0;
+
         std::string line;
-        std::getline(infile, line);
+        std::getline(countfile, line);
+
         int maxNumber = std::stoi(line);
         secondNumber = maxNumber;
 
@@ -93,15 +95,39 @@ void modeR(const int argc, char* argv[]) {
 
             std::getline(infile, line); // probably inefficient
             if (status == taskType) {
-                std::cout << i << ": " << line << std::endl;
+                std::cout << i << ":" << line << std::endl;
             }
         }
     }
+    infile.close();
+    countfile.close();
 }
 
 // method when mode is w
 void modeW(const int argc, char* argv[]) {
+    // the 3rd arg is the task description, and it's assumed the task description is surrounded by quotation marks
+    // for extra flags, it's going to be put in a loop and only looks for one flag, open, done, or iprg
+    // if nothing or invalid results only, then defaults to open flag
     std::cout << "This is mode w" << std::endl;
+
+    std::ofstream outfile("tasks.txt", std::ios::app);
+    std::fstream countfile("count.txt", std::ios::in | std::ios::out);
+
+    std::string taskType = "OPEN";  // its the default
+
+    if (argc > 3) {     // add flags here, like changing the open to iprg or done (make into while loop like read)
+        ;
+    }
+
+    outfile << taskType << " " << argv[2] << std::endl;
+    std::string line;
+    std::getline(countfile, line);
+    int maxNumber = std::stoi(line);
+    countfile.seekp(0);  // Rewind to start of file
+    countfile << maxNumber + 1 << std::endl;
+
+    outfile.close();
+    countfile.close();
 }
 
 // method when mode is u
@@ -116,8 +142,6 @@ int main(const int argc, char* argv[]) {
 
     // The To-Do List file is system-based and automatically generated.
 
-    int totalTasks = 0;    // Here, you get the first number from the task file. It will be the total number of tasks.
-
     if (argc < 2) {
         std::cout << "No mode specified." << std::endl;
          return 1;
@@ -125,6 +149,7 @@ int main(const int argc, char* argv[]) {
 
     std::ifstream infile("tasks.txt");
     if (!infile) {
+        int totalTasks = 0;
         std::cout << "File not found. Creating one: " << std::endl;
 
         std::ofstream outfile("tasks.txt");
