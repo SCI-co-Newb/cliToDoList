@@ -32,7 +32,7 @@ void modeR(const int argc, char* argv[]) {
                     && std::all_of(argv[i + 1], argv[i + 1] + strlen(argv[i + 1]), ::isdigit)
                     && std::stoi(argv[i + 1]) <= maxNumber) {
                     rangeMode = "first";
-                    firstNumber = 0;
+                    firstNumber = 1;
                     secondNumber = std::stoi(argv[i + 1]);
                     i = i + 1;
                 } else {
