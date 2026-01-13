@@ -108,8 +108,6 @@ void modeW(const int argc, char* argv[]) {
     // the 3rd arg is the task description, and it's assumed the task description is surrounded by quotation marks
     // for extra flags, it's going to be put in a loop and only looks for one flag, open, done, or iprg
     // if nothing or invalid results only, then defaults to open flag
-    std::cout << "This is mode w" << std::endl;
-
     std::ofstream outfile("tasks.txt", std::ios::app);
     std::fstream countfile("count.txt", std::ios::in | std::ios::out);
 
@@ -143,7 +141,65 @@ void modeW(const int argc, char* argv[]) {
 
 // method when mode is u
 void modeU(const int argc, char* argv[]) {
-    std::cout << "This is mode u" << std::endl;
+    // basically just updating the specific task by id (can get id by reading the specific task type)
+    std::fstream file("tasks.txt", std::ios::in | std::ios::out);
+    std::ifstream countfile("count.txt");   // so the user doesn't go out of range
+
+    std::string countLine;
+    std::getline(countfile, countLine);
+    int maxNumber = std::stoi(countLine);
+
+    if (maxNumber >= std::stoi(argv[2]) && maxNumber > 0) {
+        std::string dummy;
+        for (int i = 1; i < std::stoi(argv[2]); i++) {
+            std::getline(file, dummy);
+        }
+
+        auto lineStartPos = file.tellp();
+        std::getline(file, dummy);
+
+        std::string taskType = "NEXT";  // it's the default
+
+        if (argc > 3) {
+            for (int i = 3; i < argc; i++) {
+                if (strcmp(argv[i], "-done") == 0) {
+                    taskType = "DONE";
+                } else if (strcmp(argv[i], "-open") == 0) {
+                    taskType = "OPEN";
+                } else if (strcmp(argv[i], "-iprg") == 0) {
+                    taskType = "IPRG";
+                } else {
+                    std::cout << "Warning: unknown option " << argv[i] << std::endl;
+                }
+            }
+        }
+
+        file.seekp(lineStartPos);
+        char status[5];
+        file.read(status, 4);
+        status[4] = '\0';
+
+        if (taskType == "NEXT") {
+            // Read first 4 chars
+            if (std::string(status) == "OPEN") {
+                taskType = "IPRG";
+            } else {
+                taskType = "DONE";
+            }
+        }
+
+        if (std::string(status) != taskType) {
+            file.seekp(lineStartPos);
+            file.write(taskType.c_str(), 4);
+            std::cout << "The status of task " << argv[2] << " changed from '" << status << "' to '" << taskType << "'." << std::endl;
+        } else {
+            std::cout << "The status of task " << argv[2] << " did not change." << std::endl;
+        }
+    } else {
+        std::cout << "Task number out of range." << std::endl;
+    }
+    file.close();
+    countfile.close();
 }
 
 // method to sync count with number of tasks (auxiliary/admin usage)
