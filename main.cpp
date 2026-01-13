@@ -162,22 +162,38 @@ int main(const int argc, char* argv[]) {
 
     std::ifstream infile("tasks.txt");
     if (!infile) {
-        int totalTasks = 0;
-        std::cout << "File not found. Creating one: " << std::endl;
+        std::cout << "Task file not found. Creating one: " << std::endl;
 
         std::ofstream outfile("tasks.txt");
         if (!outfile) {
-            std::cout << "Error creating file." << std::endl;
+            std::cout << "Error creating task file." << std::endl;
             return 1;
         }
 
-        outfile << totalTasks;
-
-        std::cout << "File created, proceeding." << std::endl;
+        std::cout << "Task file created, proceeding." << std::endl;
         outfile.close();
     } else {
-        std::cout << "File found, proceeding." << std::endl;
+        std::cout << "Task file found, proceeding." << std::endl;
         infile.close();
+    }
+
+    std::ifstream cinfile("count.txt");
+    if (!cinfile) {
+        std::cout << "Count file not found. Creating one: " << std::endl;
+
+        std::ofstream coutfile("count.txt");
+        if (!coutfile) {
+            std::cout << "Error creating count file." << std::endl;
+            return 1;
+        }
+
+        coutfile << 0 << std::endl;
+
+        std::cout << "Count file created, proceeding." << std::endl;
+        coutfile.close();
+    } else {
+        std::cout << "Count file found, proceeding." << std::endl;
+        cinfile.close();
     }
 
     if (strcmp(argv[1], "r") == 0) {
