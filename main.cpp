@@ -116,10 +116,21 @@ void modeW(const int argc, char* argv[]) {
     std::string taskType = "OPEN";  // its the default
 
     if (argc > 3) {     // add flags here, like changing the open to iprg or done (make into while loop like read)
-        ;
+        for (int i = 3; i < argc; i++) {
+            if (strcmp(argv[i], "-done") == 0) {
+                taskType = "DONE";
+            } else if (strcmp(argv[i], "-open") == 0) {
+                taskType = "OPEN";
+            } else if (strcmp(argv[i], "-iprg") == 0) {
+                taskType = "IPRG";
+            } else {
+                std::cout << "Warning: unknown option " << argv[i] << std::endl;
+            }
+        }
     }
 
     outfile << taskType << " " << argv[2] << std::endl;
+    std::cout << "Task added." << std::endl;
     std::string line;
     std::getline(countfile, line);
     int maxNumber = std::stoi(line);
@@ -134,6 +145,8 @@ void modeW(const int argc, char* argv[]) {
 void modeU(const int argc, char* argv[]) {
     std::cout << "This is mode u" << std::endl;
 }
+
+// method to sync count with number of tasks (auxiliary/admin usage)
 
 int main(const int argc, char* argv[]) {
 

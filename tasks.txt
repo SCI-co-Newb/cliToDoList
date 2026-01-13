@@ -4,3 +4,6 @@ OPEN This is Test Task Three.
 IPRG This is Test Task Four.
 OPEN This is Test Task Five.
 OPEN This is Test Task Six.
+OPEN This is Test Task Seven.
+IPRG This is Test Task Eight.
+DONE This is Test Task Nine.
