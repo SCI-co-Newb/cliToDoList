@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 
+// basically just skip all the dele lines (probably just for the defalt/all types mode)
 // method when mode is r
 void modeR(const int argc, char* argv[]) {
     // options going to be done, open, or iprg (inprogress); and -first, -se, or -last (decided to do only one)
@@ -9,10 +10,21 @@ void modeR(const int argc, char* argv[]) {
     std::ifstream infile("tasks.txt");
     std::ifstream countfile("count.txt");
 
-    if (argc == 2) {
+    if (argc == 2) {    // here, also add thier ids next to them too
+
+        std::cout << std::left
+              << std::setw(6) << " ID"
+              << std::setw(8) << "STATUS"
+              << "DESCRIPTION" << std::endl;
+        std::cout << "----  ------  -----------" << std::endl;
+
         std::string line;
+        int lineNum = 1;
         while (std::getline(infile, line)) {
-            std::cout << line << std::endl;
+            std::cout << std::right << std::setw(4) << lineNum
+                      << std::left << std::setw(10) << std::string("   ") + line.substr(0, 4)
+                      << line.substr(5) << std::endl;   // skipped space to better align with top
+            lineNum++;
         }
     } else {
         std::string rangeMode = "default";
@@ -139,6 +151,7 @@ void modeW(const int argc, char* argv[]) {
     countfile.close();
 }
 
+// if id hits a dead task, tell them it's been (soft)deleted, and to redo it then do the delete opt for this id again
 // method when mode is u
 void modeU(const int argc, char* argv[]) {
     // basically just updating the specific task by id (can get id by reading the specific task type)
@@ -201,6 +214,12 @@ void modeU(const int argc, char* argv[]) {
     file.close();
     countfile.close();
 }
+
+// method to mark a line to be deleted (like DELE or something) or undo the DELE by going through this method again
+
+// method to specify which line(s) to soft-delete (1 or many) (basically skips it when viewing, others need changing)
+
+// method to purge the marked soft-deleted items (
 
 // method to sync count with number of tasks (auxiliary/admin usage)
 
