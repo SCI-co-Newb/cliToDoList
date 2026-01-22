@@ -2,6 +2,7 @@
 #include <iostream>
 
 // basically just skip all the dele lines (probably just for the defalt/all types mode)
+// also id gets potentially overwriden after each purge since its simply line number (technically not id)
 // method when mode is r
 void modeR(const int argc, char* argv[]) {
     // options going to be done, open, or iprg (inprogress); and -first, -se, or -last (decided to do only one)
@@ -19,11 +20,17 @@ void modeR(const int argc, char* argv[]) {
         std::cout << "----  ------  -----------" << std::endl;
 
         std::string line;
+        std::string status;
         int lineNum = 1;
         while (std::getline(infile, line)) {
-            std::cout << std::right << std::setw(4) << lineNum
-                      << std::left << std::setw(10) << std::string("   ") + line.substr(0, 4)
-                      << line.substr(5) << std::endl;   // skipped space to better align with top
+            status = line.substr(0, 4);
+
+            if (status != "TRSH") {
+                std::cout << std::right << std::setw(4) << lineNum
+                          << std::left << std::setw(10) << std::string("   ") + status
+                          << line.substr(5) << std::endl;   // skipped space to better align with top
+            }
+
             lineNum++;
         }
     } else {
@@ -101,13 +108,25 @@ void modeR(const int argc, char* argv[]) {
         }
 
         char status[5]; // 5 chars + null terminator
-        for (int i = firstNumber; i <= secondNumber; i++) {
-            infile.read(status, 4);
-            status[4] = '\0';
+        if (taskType != "default") {
+            for (int i = firstNumber; i <= secondNumber; i++) {
+                infile.read(status, 4);
+                status[4] = '\0';
 
-            std::getline(infile, line); // probably inefficient
-            if (status == taskType) {
-                std::cout << i << ":" << line << std::endl;
+                std::getline(infile, line); // probably inefficient
+                if (status == taskType) {
+                    std::cout << i << ":" << line << std::endl;
+                }
+            }
+        } else {
+            for (int i = firstNumber; i <= secondNumber; i++) {
+                infile.read(status, 4);
+                status[4] = '\0';
+
+                std::getline(infile, line); // probably inefficient
+                if (status != std::string("TRSH")) {        // so it skips soft deleted stuff here
+                    std::cout << i << ":" << line << std::endl;
+                }
             }
         }
     }
