@@ -251,17 +251,38 @@ void toggleDelete(int lineNum) {    // precondition is lineNum >= 1 and lineNum 
     file.read(status, 4);
     status[4] = '\0';
 
-    if (std::string(status) == "TRSH") {
+    if (std::string(status) == "TRSH") {    // maybe previous status can be preserved somehow (unique trash statuses)
         file.seekp(lineStartPos);
         file.write("OPEN", 4);
+        std::cout << "Task " << lineNum << " has been undeleted." << std::endl;
     } else {
         file.seekp(lineStartPos);
         file.write("TRSH", 4);
+        std::cout << "Task " << lineNum << " has been deleted." << std::endl;
     }
     file.close();
 }
 
 // method to specify which line(s) to soft-delete (1 or many) (basically skips it when viewing, others need changing)
+void modeD(const int argc, char* argv[]) {
+    std::ifstream countfile("count.txt");
+    std::string line;
+    std::getline(countfile, line);
+    int maxNumber = std::stoi(line);
+
+    if (argc > 2) { // after choosing mode, it needs to specify the line numbers to be deleted
+        for (int i = 2; i < argc; i++) {
+            if (std::stoi(argv[i]) <= maxNumber) {
+                toggleDelete(std::stoi(argv[i]));
+            } else {
+                std::cout << "Line number out of range." << std::endl;
+            }
+        }
+    } else {
+        std::cout << "No line numbers specified." << std::endl;
+    }
+    countfile.close();
+}
 
 // method to purge the marked soft-deleted items
 
@@ -326,6 +347,8 @@ int main(const int argc, char* argv[]) {
         // check for corrections or errors, then call the method for u
         if (argc > 2) modeU(argc, argv);
         else std::cout << "No task/ticket number specified." << std::endl;
+    } else if (strcmp(argv[1], "d") == 0) {
+        modeD(argc, argv);
     } else {
         std::cout << "Invalid mode specified." << std::endl;
         return 1;
