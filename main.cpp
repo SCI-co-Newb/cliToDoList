@@ -234,11 +234,36 @@ void modeU(const int argc, char* argv[]) {
     countfile.close();
 }
 
-// method to mark a line to be deleted (like DELE or something) or undo the DELE by going through this method again
+// method to mark a line to be deleted (TRSH) or undo the DELE by going through this method again (resets to open)
+void toggleDelete(int lineNum) {    // precondition is lineNum >= 1 and lineNum <= count from count.txt file
+    std::fstream file("tasks.txt", std::ios::in | std::ios::out);
+
+    std::string dummy;
+    for (int i = 1; i < lineNum; i++) {
+        std::getline(file, dummy);
+    }
+
+    auto lineStartPos = file.tellp();
+    std::getline(file, dummy);
+
+    file.seekp(lineStartPos);
+    char status[5];
+    file.read(status, 4);
+    status[4] = '\0';
+
+    if (std::string(status) == "TRSH") {
+        file.seekp(lineStartPos);
+        file.write("OPEN", 4);
+    } else {
+        file.seekp(lineStartPos);
+        file.write("TRSH", 4);
+    }
+    file.close();
+}
 
 // method to specify which line(s) to soft-delete (1 or many) (basically skips it when viewing, others need changing)
 
-// method to purge the marked soft-deleted items (
+// method to purge the marked soft-deleted items
 
 // method to sync count with number of tasks (auxiliary/admin usage)
 
