@@ -2,7 +2,6 @@ OPEN This is Test Task One.
 DONE This is Test Task Two.
 DONE This is Test Task Three.
 OPEN This is Test Task Four.
-OPEN This is Test Task Five.
 OPEN This is Test Task Six.
 OPEN This is Test Task Seven.
 IPRG This is Test Task Eight.

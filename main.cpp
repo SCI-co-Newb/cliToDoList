@@ -9,7 +9,6 @@ void modeR(const int argc, char* argv[]) {
     // if given multiple, only the last of the two will be considered
     // all other options will be given a warning, but it still continues
     std::ifstream infile("tasks.txt");
-    std::ifstream countfile("count.txt");
 
     if (argc == 2) {    // here, also add thier ids next to them too
 
@@ -235,7 +234,7 @@ void modeU(const int argc, char* argv[]) {
 }
 
 // method to mark a line to be deleted (TRSH) or undo the DELE by going through this method again (resets to open)
-void toggleDelete(int lineNum) {    // precondition is lineNum >= 1 and lineNum <= count from count.txt file
+void toggleDelete(const int lineNum) {    // precondition is lineNum >= 1 and lineNum <= count from count.txt file
     std::fstream file("tasks.txt", std::ios::in | std::ios::out);
 
     std::string dummy;
@@ -243,7 +242,7 @@ void toggleDelete(int lineNum) {    // precondition is lineNum >= 1 and lineNum 
         std::getline(file, dummy);
     }
 
-    auto lineStartPos = file.tellp();
+    const auto lineStartPos = file.tellp();
     std::getline(file, dummy);
 
     file.seekp(lineStartPos);
@@ -285,6 +284,54 @@ void modeD(const int argc, char* argv[]) {
 }
 
 // method to purge the marked soft-deleted items
+void purgeTrash() {
+    std::ifstream infile("tasks.txt");
+
+    std::vector<std::string> nonTrash;
+    std::string line;
+    while (std::getline(infile, line)) {
+        if (line.substr(0, 4) != "TRSH") {
+            nonTrash.push_back(line);
+        }
+    }
+    infile.close();
+
+    std::ofstream outfile("tasks.txt", std::ios::trunc);
+
+    for (const auto& keptLine : nonTrash) {
+        outfile << keptLine << '\n';    // more efficient than endl since buffer is not flushed
+    }
+
+    outfile.close();
+}
+
+// method to purge the marked soft-deleted items
+void modeP() {
+    // Prints all the marked items and confirms with the user if they still want to purge the items
+    std::ifstream infile("tasks.txt");
+
+    int items = 0;
+    std::string line;
+    while (std::getline(infile, line)) {
+        if (line.substr(0, 4) == "TRSH") {
+            std::cout << line << std::endl;
+            items++;
+        }
+    }
+
+    if (items == 0) {
+        std::cout << "No marked items to purge." << std::endl;
+        return;
+    }
+
+    std::string confirm;
+    std::cout << std::endl
+              << "Purge ALL " << items
+              << " TRASH items? This CANNOT be undone! (y/n): ";
+    std::getline(std::cin, confirm);
+
+    if (!confirm.empty() && (confirm[0] == 'y' || confirm[0] == 'Y')) purgeTrash();
+}
 
 // method to sync count with number of tasks (auxiliary/admin usage)
 
@@ -349,6 +396,8 @@ int main(const int argc, char* argv[]) {
         else std::cout << "No task/ticket number specified." << std::endl;
     } else if (strcmp(argv[1], "d") == 0) {
         modeD(argc, argv);
+    } else if (strcmp(argv[1], "p") == 0) {
+        modeP();
     } else {
         std::cout << "Invalid mode specified." << std::endl;
         return 1;
