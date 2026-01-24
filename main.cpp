@@ -1,6 +1,8 @@
 #include <fstream>
 #include <iostream>
 
+int getTaskCount();
+
 // basically just skip all the dele lines (probably just for the defalt/all types mode)
 // also id gets potentially overwriden after each purge since its simply line number (technically not id)
 // method when mode is r
@@ -36,13 +38,10 @@ void modeR(const int argc, char* argv[]) {
         std::string rangeMode = "default";
         std::string taskType = "default";
 
-        int firstNumber = 1, secondNumber = 0;
+        int firstNumber = 1, secondNumber = getTaskCount();
+        int maxNumber = secondNumber;
 
         std::string line;
-        std::getline(countfile, line);
-
-        int maxNumber = std::stoi(line);
-        secondNumber = maxNumber;
 
         for (int i = 2; i < argc; i++) {
             if (strcmp(argv[i], "-first") == 0) {
@@ -130,7 +129,6 @@ void modeR(const int argc, char* argv[]) {
         }
     }
     infile.close();
-    countfile.close();
 }
 
 // method when mode is w
@@ -139,7 +137,6 @@ void modeW(const int argc, char* argv[]) {
     // for extra flags, it's going to be put in a loop and only looks for one flag, open, done, or iprg
     // if nothing or invalid results only, then defaults to open flag
     std::ofstream outfile("tasks.txt", std::ios::app);
-    std::fstream countfile("count.txt", std::ios::in | std::ios::out);
 
     std::string taskType = "OPEN";  // its the default
 
@@ -159,14 +156,8 @@ void modeW(const int argc, char* argv[]) {
 
     outfile << taskType << " " << argv[2] << std::endl;
     std::cout << "Task added." << std::endl;
-    std::string line;
-    std::getline(countfile, line);
-    int maxNumber = std::stoi(line);
-    countfile.seekp(0);  // Rewind to start of file
-    countfile << maxNumber + 1 << std::endl;
 
     outfile.close();
-    countfile.close();
 }
 
 // if id hits a dead task, tell them it's been (soft)deleted, and to redo it then do the delete opt for this id again
@@ -174,12 +165,8 @@ void modeW(const int argc, char* argv[]) {
 void modeU(const int argc, char* argv[]) {
     // basically just updating the specific task by id (can get id by reading the specific task type)
     std::fstream file("tasks.txt", std::ios::in | std::ios::out);
-    std::ifstream countfile("count.txt");   // so the user doesn't go out of range
 
-    std::string countLine;
-    std::getline(countfile, countLine);
-    int maxNumber = std::stoi(countLine);
-
+    int maxNumber = getTaskCount();
     if (maxNumber >= std::stoi(argv[2]) && maxNumber > 0) {
         std::string dummy;
         for (int i = 1; i < std::stoi(argv[2]); i++) {
@@ -230,7 +217,6 @@ void modeU(const int argc, char* argv[]) {
         std::cout << "Task number out of range." << std::endl;
     }
     file.close();
-    countfile.close();
 }
 
 // method to mark a line to be deleted (TRSH) or undo the DELE by going through this method again (resets to open)
@@ -264,10 +250,7 @@ void toggleDelete(const int lineNum) {    // precondition is lineNum >= 1 and li
 
 // method to specify which line(s) to soft-delete (1 or many) (basically skips it when viewing, others need changing)
 void modeD(const int argc, char* argv[]) {
-    std::ifstream countfile("count.txt");
-    std::string line;
-    std::getline(countfile, line);
-    int maxNumber = std::stoi(line);
+    const int maxNumber = getTaskCount();
 
     if (argc > 2) { // after choosing mode, it needs to specify the line numbers to be deleted
         for (int i = 2; i < argc; i++) {
@@ -280,7 +263,6 @@ void modeD(const int argc, char* argv[]) {
     } else {
         std::cout << "No line numbers specified." << std::endl;
     }
-    countfile.close();
 }
 
 // method to purge the marked soft-deleted items
@@ -335,6 +317,15 @@ void modeP() {
 
 // method to sync count with number of tasks (auxiliary/admin usage)
 
+// method to get number of lines (delete count.txt file)
+int getTaskCount() {
+    std::ifstream file("tasks.txt");
+    std::string dummy;
+    int count = 0;
+    while (std::getline(file, dummy)) count++;
+    return count;
+}
+
 int main(const int argc, char* argv[]) {
 
     // The first line/number of the file will be the total number of tasks. Compare with ranges to see if out of bounds.
@@ -362,25 +353,6 @@ int main(const int argc, char* argv[]) {
     } else {
         std::cout << "Task file found, proceeding." << std::endl;
         infile.close();
-    }
-
-    std::ifstream cinfile("count.txt");
-    if (!cinfile) {
-        std::cout << "Count file not found. Creating one: " << std::endl;
-
-        std::ofstream coutfile("count.txt");
-        if (!coutfile) {
-            std::cout << "Error creating count file." << std::endl;
-            return 1;
-        }
-
-        coutfile << 0 << std::endl;
-
-        std::cout << "Count file created, proceeding." << std::endl;
-        coutfile.close();
-    } else {
-        std::cout << "Count file found, proceeding." << std::endl;
-        cinfile.close();
     }
 
     if (strcmp(argv[1], "r") == 0) {
